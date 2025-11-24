@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Wi-Fi QR Generator</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script defer src="main.dart.js"></script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <h2>Wi-Fi QRコード生成</h2>
+
+  <label>SSID:
+    <input id="ssid" type="text">
+  </label>
+
+  <label>パスワード:
+    <input id="pass" type="password">
+  </label>
+
+  <label>暗号化方式:
+    <select id="type">
+      <option value="WPA">WPA/WPA2/WPA3</option>
+      <option value="WEP">WEP</option>
+      <option value="">なし（オープン）</option>
+    </select>
+  </label>
+
+  <button id="btn">QRコード生成</button>
+
+  <div id="qr"></div>
+
+</body>
+</html>

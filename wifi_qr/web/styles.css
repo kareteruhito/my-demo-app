@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+body {
+  font-family: sans-serif;
+  padding: 20px;
+  max-width: 400px; 
+}
+label {
+  display: block;
+  margin-top: 12px;
+}
+#qr {
+  margin-top: 20px;
+}
