@@ -3,10 +3,7 @@ import 'dart:js_interop';
 
 // qrcode.jsの型定義
 @JS()
-@staticInterop
-class QRCode {
-  external factory QRCode(String id, String options);
-}
+external void generateWifiQR(String text);
 
 
 // エントリーポイント
@@ -40,12 +37,12 @@ void generateQR() {
   // WIFI接続情報のフォーマット
   final wifiString = 'WIFI:T:$type;S:$ssid;P:$pass;;';
 
+  /*
   // QRコード表示用のdiv要素を取得して初期化
   final qrDiv = web.document.querySelector('#qr') as web.HTMLDivElement?;
   qrDiv?.innerHTML = ''.toJS;
 
   // QRコード生成
-  /*
   QRCodeJS(
     qrDiv!,
     {
@@ -55,9 +52,6 @@ void generateQR() {
     },
   );
   */
-  QRCode(
-    'qr',
-    'qr',
-  );
+  generateWifiQR(wifiString);
 
 }

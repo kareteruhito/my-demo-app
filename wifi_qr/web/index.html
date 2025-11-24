@@ -4,6 +4,24 @@
   <meta charset="UTF-8">
   <title>Wi-Fi QR Generator</title>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script>
+    // ☆ Dart から呼び出す関数
+    function generateWifiQR(text) {
+      // #qr の中をクリア
+      var div = document.getElementById("qr");
+      div.innerHTML = "";
+
+      // QR コード生成
+      new QRCode(div, {
+        text: text,
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+  </script>
   <script defer src="main.dart.js"></script>
 
   <link rel="stylesheet" href="styles.css">
