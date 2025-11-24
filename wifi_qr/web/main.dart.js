@@ -3905,10 +3905,11 @@
       qrDiv = A._asJSObjectQ(A._asJSObject(t1.document).querySelector("#qr"));
       if (qrDiv != null)
         qrDiv.innerHTML = "";
+      t1 = t1.QRCodeJS;
       qrDiv.toString;
       t2 = A.jsify(A.LinkedHashMap_LinkedHashMap$_literal(["text", "WIFI:T:" + type + ";S:" + ssid + ";P:" + pass + ";;", "width", 256, "height", 256], type$.String, type$.Object));
       t2.toString;
-      type$.JavaScriptObject._as(t1.QRCode(qrDiv, t2));
+      type$.JavaScriptObject._as(new t1(qrDiv, t2));
     },
     $signature: 5
   };
