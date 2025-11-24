@@ -37,22 +37,6 @@ void generateQR() {
   // WIFI接続情報のフォーマット
   final wifiString = 'WIFI:T:$type;S:$ssid;P:$pass;;';
 
-  /*
-  // QRコード表示用のdiv要素を取得して初期化
-  final qrDiv = web.document.querySelector('#qr') as web.HTMLDivElement?;
-  qrDiv?.innerHTML = ''.toJS;
-
-  // QRコード生成
-  QRCodeJS(
-    qrDiv!,
-    {
-    'text': wifiString,
-    'width': 256,
-    'height': 256,
-    },
-  );
-  */
-  (web.document.querySelector('#ssid') as web.HTMLInputElement?)?.value = wifiString;
   generateWifiQR(wifiString);
 
 }

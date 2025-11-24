@@ -3009,7 +3009,7 @@
   };
   A.main_closure.prototype = {
     call$1($event) {
-      var t1, t2, ssid, pass, selectedType, wifiString;
+      var t1, t2, ssid, pass, selectedType;
       A._asJSObject($event);
       t1 = init.G;
       t2 = A._asJSObjectQ(A._asJSObject(t1.document).querySelector("#ssid"));
@@ -3022,11 +3022,7 @@
         pass = "";
       t2 = A._asJSObjectQ(A._asJSObject(t1.document).querySelector("#type"));
       selectedType = t2 == null ? null : A._asString(t2.value);
-      wifiString = "WIFI:T:" + (selectedType == null || selectedType.length === 0 ? "WPA" : selectedType) + ";S:" + ssid + ";P:" + pass + ";;";
-      t2 = A._asJSObjectQ(A._asJSObject(t1.document).querySelector("#ssid"));
-      if (t2 != null)
-        t2.value = wifiString;
-      t1.generateWifiQR(wifiString);
+      t1.generateWifiQR("WIFI:T:" + (selectedType == null || selectedType.length === 0 ? "WPA" : selectedType) + ";S:" + ssid + ";P:" + pass + ";;");
     }
   };
   (function aliases() {
