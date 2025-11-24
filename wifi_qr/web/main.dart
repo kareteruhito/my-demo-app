@@ -52,6 +52,7 @@ void generateQR() {
     },
   );
   */
+  print(wifiString);
   generateWifiQR(wifiString);
 
 }

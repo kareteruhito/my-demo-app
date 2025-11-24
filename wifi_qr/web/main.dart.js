@@ -2552,6 +2552,21 @@
     },
     main_closure: function main_closure() {
     },
+    printString(string) {
+      if (typeof dartPrint == "function") {
+        dartPrint(string);
+        return;
+      }
+      if (typeof console == "object" && typeof console.log != "undefined") {
+        console.log(string);
+        return;
+      }
+      if (typeof print == "function") {
+        print(string);
+        return;
+      }
+      throw "Unable to print message: " + String(string);
+    },
     throwLateFieldADI(fieldName) {
       throw A.initializeExceptionWrapper(new A.LateError("Field '" + fieldName + "' has been assigned during initialization."), new Error());
     },
@@ -2780,17 +2795,20 @@
   A.initHooks_closure.prototype = {
     call$1(o) {
       return this.getTag(o);
-    }
+    },
+    $signature: 0
   };
   A.initHooks_closure0.prototype = {
     call$2(o, tag) {
       return this.getUnknownTag(o, tag);
-    }
+    },
+    $signature: 1
   };
   A.initHooks_closure1.prototype = {
     call$1(tag) {
       return this.prototypeForTag(A._asString(tag));
-    }
+    },
+    $signature: 2
   };
   A.NativeByteBuffer.prototype = {
     get$runtimeType(receiver) {
@@ -3009,7 +3027,7 @@
   };
   A.main_closure.prototype = {
     call$1($event) {
-      var t1, t2, ssid, pass, selectedType;
+      var t1, t2, ssid, pass, selectedType, wifiString;
       A._asJSObject($event);
       t1 = init.G;
       t2 = A._asJSObjectQ(A._asJSObject(t1.document).querySelector("#ssid"));
@@ -3022,8 +3040,11 @@
         pass = "";
       t2 = A._asJSObjectQ(A._asJSObject(t1.document).querySelector("#type"));
       selectedType = t2 == null ? null : A._asString(t2.value);
-      t1.generateWifiQR("WIFI:T:" + (selectedType == null || selectedType.length === 0 ? "WPA" : selectedType) + ";S:" + ssid + ";P:" + pass + ";;");
-    }
+      wifiString = "WIFI:T:" + (selectedType == null || selectedType.length === 0 ? "WPA" : selectedType) + ";S:" + ssid + ";P:" + pass + ";;";
+      A.printString(wifiString);
+      t1.generateWifiQR(wifiString);
+    },
+    $signature: 3
   };
   (function aliases() {
     var _ = J.LegacyJavaScriptObject.prototype;
@@ -3065,7 +3086,7 @@
     typeUniverse: {eC: new Map(), tR: {}, eT: {}, tPV: {}, sEA: []},
     mangledGlobalNames: {int: "int", double: "double", num: "num", String: "String", bool: "bool", Null: "Null", List: "List", Object: "Object", Map: "Map", JSObject: "JSObject"},
     mangledNames: {},
-    types: [],
+    types: ["@(@)", "@(@,String)", "@(String)", "Null(JSObject)"],
     interceptorsByTag: null,
     leafTags: null,
     arrayRti: Symbol("$ti")
