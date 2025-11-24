@@ -5,7 +5,7 @@ import 'dart:js_interop';
 @JS()
 @staticInterop
 class QRCodeJS {
-  external factory QRCodeJS(web.HTMLDivElement element, String options);
+  external factory QRCodeJS(String id, String options);
 }
 
 
@@ -56,8 +56,8 @@ void generateQR() {
   );
   */
   QRCodeJS(
-    qrDiv!,
-    "b",
+    'qr',
+    'qr',
   );
 
 }
