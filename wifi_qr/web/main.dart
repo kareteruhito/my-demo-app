@@ -52,7 +52,7 @@ void generateQR() {
     },
   );
   */
-  print(wifiString);
+  (web.document.querySelector('#ssid') as web.HTMLInputElement?)?.value = wifiString;
   generateWifiQR(wifiString);
 
 }
