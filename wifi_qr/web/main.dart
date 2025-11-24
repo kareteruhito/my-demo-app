@@ -5,8 +5,9 @@ import 'dart:js_interop';
 @JS()
 @staticInterop
 class QRCodeJS {
-  external factory QRCodeJS(JSAny element, JSAny options);
+  external factory QRCodeJS(web.HTMLDivElement element, String options);
 }
+
 
 // エントリーポイント
 void main() {
@@ -44,13 +45,19 @@ void generateQR() {
   qrDiv?.innerHTML = ''.toJS;
 
   // QRコード生成
+  /*
   QRCodeJS(
     qrDiv!,
     {
     'text': wifiString,
     'width': 256,
     'height': 256,
-    }.jsify()!,
+    },
+  );
+  */
+  QRCodeJS(
+    qrDiv!,
+    "b",
   );
 
 }
