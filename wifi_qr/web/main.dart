@@ -4,8 +4,8 @@ import 'dart:js_interop';
 // qrcode.jsの型定義
 @JS()
 @staticInterop
-class QRCodeJS {
-  external factory QRCodeJS(String id, String options);
+class QRCode {
+  external factory QRCode(String id, String options);
 }
 
 
@@ -55,7 +55,7 @@ void generateQR() {
     },
   );
   */
-  QRCodeJS(
+  QRCode(
     'qr',
     'qr',
   );

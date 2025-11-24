@@ -3024,7 +3024,7 @@
       qrDiv = A._asJSObjectQ(A._asJSObject(t1.document).querySelector("#qr"));
       if (qrDiv != null)
         qrDiv.innerHTML = "";
-      type$.JavaScriptObject._as(new t1.QRCodeJS("qr", "qr"));
+      type$.JavaScriptObject._as(new t1.QRCode("qr", "qr"));
     }
   };
   (function aliases() {
