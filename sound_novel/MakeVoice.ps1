@@ -7,15 +7,6 @@ Write-Host $voiceName
 
 $voice.SelectVoice($voiceName)
 
-$voice.SetOutputToWaveFile("opening.wav")
-$voice.Speak("オープニング")
-$voice.SetOutputToDefaultAudioDevice()
-
-Remove-Item "sounds/opening.mp3" -ErrorAction SilentlyContinue
-ffmpeg.exe -i opening.wav sounds/opening.mp3
-Remove-Item opening.wav
-
-
 $voice.SetOutputToWaveFile("voice001.wav")
 $voice.Speak("目を覚ますと、そこは森の中だった。")
 $voice.SetOutputToDefaultAudioDevice()

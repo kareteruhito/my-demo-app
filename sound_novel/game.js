@@ -42,7 +42,6 @@ function showSlide(i) {
     img.style.display = "none";
     video.style.display = "none";
     voiceAudio.pause();
-    bgmAudio.pause();
     return;
   }
 
