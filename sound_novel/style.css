@@ -1,0 +1,47 @@
+/* 全体レイアウト */
+body {
+  margin: 0;
+  background: #000;
+  color: #fff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* 画像・動画エリア */
+#screen {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  background: #000;
+}
+
+#img,
+#video {
+  max-width: 100%;
+  max-height: 100%;
+  display: none;
+}
+
+/* テキストウィンドウ */
+#text {
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.8);
+  border-top: 1px solid #444;
+  min-height: 3em;
+  box-sizing: border-box;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* スマホなど横幅が狭いとき用 */
+@media (max-width: 600px) {
+  #text {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+}

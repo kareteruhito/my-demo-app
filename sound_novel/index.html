@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>紙芝居ADVエンジン</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <script id="slides-data" type="application/json">
+[
+  {
+    "type": "bgm",
+    "src": "sounds/opening.mp3",
+    "channel": 0,
+    "volume": 0.8
+  },
+  {
+    "type": "image",
+    "src": "images/scene1.png",
+    "autoNext": true,
+    "wait": 800
+  },
+  {
+    "type": "voice",
+    "text": "目を覚ますと、そこは森の中だった。",
+    "voice": "voices/v001.mp3"
+  },
+  {
+    "type": "bgm",
+    "src": "sounds/bgm1.mp3",
+    "channel": 1,
+    "volume": 0.8
+  },
+  {
+    "type": "video",
+    "src": "videos/forest_loop.mp4",
+    "loop": true,
+    "autoPlay": true,
+    "autoNext": true
+  },
+  {
+    "type": "voice",
+    "text": "草むらの向こうから、何かが動いている気配がした。",
+    "voice": "voices/v002.mp3"
+  },
+  {
+    "type": "image",
+    "src": "images/scene2.png",
+    "autoNext": true,
+    "wait": 800
+  },
+  {
+    "type": "bgmStop",
+    "channel": 0
+  },
+  {
+    "type": "bgmStop",
+    "channel": 1
+  },
+  {
+    "type": "voice",
+    "text": "僕は思わず、その場に立ち尽くした。",
+    "voice": "voices/v003.mp3"
+  }
+]
+
+  </script>
+</head>
+<body>
+
+  <div id="screen">
+    <img id="img" alt="">
+    <video id="video" playsinline></video>
+  </div>
+
+  <!-- テキストウィンドウ -->
+  <div id="text"></div>
+
+  <!-- 音声レイヤー -->
+  <audio id="bgm0"></audio>    <!-- BGM用：ループ再生 -->
+  <audio id="bgm1"></audio>
+  <audio id="bgm2"></audio>
+  <audio id="voice"></audio>  <!-- セリフ音声用 -->
+
+  <script src="game.js"></script>
+</body>
+</html>
