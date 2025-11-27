@@ -1,5 +1,7 @@
 Add-Type -AssemblyName System.Speech
 
+# 音声ファイル作成スクリプト
+
 $voice = New-Object System.Speech.Synthesis.SpeechSynthesizer
 $voices = $voice.GetInstalledVoices() | ForEach-Object { $_.VoiceInfo.Name }
 $voiceName = $voices[0]
