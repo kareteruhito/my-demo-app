@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AI使用可否 判定機</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 24px; line-height: 1.6; }
+    .wrap { max-width: 920px; margin: 0 auto; }
+    h1 { font-size: 1.4rem; margin: 0 0 12px; }
+    .note { opacity: .85; margin-bottom: 18px; }
+    .card { border: 1px solid rgba(127,127,127,.35); border-radius: 12px; padding: 14px 14px; margin: 12px 0; }
+    .qtitle { font-weight: 700; margin-bottom: 10px; }
+    .qdesc { opacity: .9; margin: 0 0 10px; }
+    .opts { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .pill { border: 1px solid rgba(127,127,127,.45); border-radius: 999px; padding: 6px 10px; cursor: pointer; user-select: none; }
+    .pill input { margin-right: 6px; }
+    .result { border-left: 6px solid transparent; }
+    .ok { border-left-color: #2aa44f; }
+    .ng { border-left-color: #cc3b3b; }
+    .mid { border-left-color: #c49a2c; }
+    .badge { display:inline-block; padding: 4px 10px; border-radius: 999px; font-weight: 700; }
+    .badge.ok { background: rgba(42,164,79,.15); }
+    .badge.ng { background: rgba(204,59,59,.15); }
+    .badge.mid { background: rgba(196,154,44,.15); }
+    .small { font-size: .95rem; opacity: .9; }
+    button { padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(127,127,127,.45); background: transparent; cursor: pointer; }
+    .row { display:flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    ul { margin: 8px 0 0 18px; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>AI使用可否 判定機（LLM向け）</h1>
+  <div class="note small">
+    狙い：<b>AIを「判断」ではなく「認識・候補出し」までに閉じ込める</b>。<br/>
+    方式：ゲート（足切り）型。1つでもNG条件に当たれば「AI不可」。
+  </div>
+
+  <div id="questions"></div>
+
+  <div class="card result mid" id="resultCard">
+    <div class="row">
+      <span class="badge mid" id="verdictBadge">未判定</span>
+      <button id="resetBtn" type="button">リセット</button>
+      <button id="exampleBtn" type="button">例（認識系）を選択</button>
+    </div>
+    <div id="verdictText" style="margin-top:10px; font-weight:700;">各設問に回答すると結果が出ます。</div>
+    <div id="details" class="small" style="margin-top:8px;"></div>
+  </div>
+
+  <div class="card">
+    <div class="qtitle">使い方メモ</div>
+    <div class="small">
+      <ul>
+        <li><b>AI使用可</b>でも「中間データ扱い」「後段でコードが締める」「責任者が止められる」が前提。</li>
+        <li><b>AI不可</b>は「ルール/コード/人間判断」に寄せる。ここでAIを使うと仕事が増えがち。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ゲート型：条件により「AI不可」を即決できるように設計
+  const QUESTIONS = [
+    {
+      id: "q1",
+      title: "Q1: 正しさの保証が必要ですか？",
+      desc: "例：法的/金銭的/安全性/セキュリティ/医療など。誤りが事故になる領域。",
+      ngIf: (a) => a === "yes",
+      whyNg: "正しさの保証が必要 → LLMは検証器ではないため「AI不可」。"
+    },
+    {
+      id: "q2",
+      title: "Q2: 失敗時に“止められる”設計ですか？",
+      desc: "FAIL/UNKNOWN を扱える？ 人間orコードが最終停止権を持つ？",
+      ngIf: (a) => a === "no",
+      whyNg: "止められない → LLMは止まらず答えを出しがちなので「AI不可」。"
+    },
+    {
+      id: "q3",
+      title: "Q3: 出力は“中間データ”ですか？（最終成果物そのものではない）",
+      desc: "AI出力をそのままユーザーに渡す/保存して確定させるなら危険。",
+      ngIf: (a) => a === "no",
+      whyNg: "最終成果物がAI出力 → 誤りがそのまま確定するので「AI不可」。"
+    },
+    {
+      id: "q4",
+      title: "Q4: 誤判定しても致命的になりませんか？",
+      desc: "誤分類しても後段で救える？ 取り返しがつく？",
+      ngIf: (a) => a === "no",
+      whyNg: "誤りが致命的 → LLMは必ず誤る前提なので「AI不可」。"
+    },
+    {
+      id: "q5",
+      title: "Q5: 後段で if-then-else（ルール/コード）で“締め”られますか？",
+      desc: "例：閾値、ブラックリスト、整合性チェック、検証可能なガード。",
+      ngIf: (a) => a === "no",
+      whyNg: "コードで締められない → 判断をLLMに委ねる形になり「AI不可」。"
+    },
+    {
+      id: "q6",
+      title: "Q6: AIを外してもシステムは成立しますか？（補助である）",
+      desc: "AIに依存すると、更新/揺れ/停止不能の影響が直撃する。",
+      ngIf: (a) => a === "no",
+      whyNg: "AI依存で成立 → 主体がAI側になり責任境界が壊れるため「AI不可」。"
+    },
+  ];
+
+  const state = Object.fromEntries(QUESTIONS.map(q => [q.id, null]));
+
+  function el(tag, attrs={}, ...children) {
+    const e = document.createElement(tag);
+    for (const [k,v] of Object.entries(attrs)) {
+      if (k === "class") e.className = v;
+      else if (k.startsWith("on") && typeof v === "function") e.addEventListener(k.slice(2), v);
+      else e.setAttribute(k, v);
+    }
+    for (const c of children) {
+      if (c == null) continue;
+      if (typeof c === "string") e.appendChild(document.createTextNode(c));
+      else e.appendChild(c);
+    }
+    return e;
+  }
+
+  function render() {
+    const root = document.getElementById("questions");
+    root.innerHTML = "";
+
+    for (const q of QUESTIONS) {
+      const yesId = `${q.id}_yes`;
+      const noId  = `${q.id}_no`;
+
+      const card = el("div", { class: "card" },
+        el("div", { class: "qtitle" }, q.title),
+        el("div", { class: "qdesc small" }, q.desc),
+        el("div", { class: "opts" },
+          el("label", { class: "pill" },
+            el("input", { type: "radio", name: q.id, id: yesId, value: "yes" }),
+            "はい"
+          ),
+          el("label", { class: "pill" },
+            el("input", { type: "radio", name: q.id, id: noId, value: "no" }),
+            "いいえ"
+          ),
+        ),
+      );
+
+      root.appendChild(card);
+
+      // restore selection & bind
+      const radios = card.querySelectorAll(`input[name="${q.id}"]`);
+      radios.forEach(r => {
+        r.checked = (state[q.id] === r.value);
+        r.addEventListener("change", () => {
+          state[q.id] = r.value;
+          updateVerdict();
+        });
+      });
+    }
+
+    updateVerdict();
+  }
+
+  function allAnswered() {
+    return QUESTIONS.every(q => state[q.id] === "yes" || state[q.id] === "no");
+  }
+
+  function updateVerdict() {
+    const card = document.getElementById("resultCard");
+    const badge = document.getElementById("verdictBadge");
+    const text = document.getElementById("verdictText");
+    const details = document.getElementById("details");
+
+    // find first NG
+    const ngReasons = [];
+    for (const q of QUESTIONS) {
+      const a = state[q.id];
+      if (a == null) continue;
+      if (q.ngIf(a)) ngReasons.push(`- ${q.title} → ${q.whyNg}`);
+    }
+
+    card.classList.remove("ok","ng","mid");
+    badge.classList.remove("ok","ng","mid");
+
+    if (!allAnswered()) {
+      card.classList.add("mid");
+      badge.classList.add("mid");
+      badge.textContent = "未判定";
+      text.textContent = "各設問に回答すると結果が出ます。";
+      details.innerHTML = "";
+      return;
+    }
+
+    if (ngReasons.length > 0) {
+      card.classList.add("ng");
+      badge.classList.add("ng");
+      badge.textContent = "AI不可";
+      text.textContent = "この案件はLLMを中核に置くべきではありません（ルール/コード/人間判断へ）。";
+      details.innerHTML =
+        `<div class="small">NG理由（足切り）:</div><ul>${ngReasons.map(r => `<li>${escapeHtml(r)}</li>`).join("")}</ul>` +
+        `<div class="small" style="margin-top:8px;">推奨: 「認識→コードで締める」構造に寄せるか、そもそもAI工程を削る。</div>`;
+      return;
+    }
+
+    card.classList.add("ok");
+    badge.classList.add("ok");
+    badge.textContent = "AI使用可";
+    text.textContent = "LLMは“認識・候補出し”としてなら使用可（最終判断はコード/人間）。";
+    details.innerHTML =
+      `<div class="small">条件を満たしました：</div>
+       <ul>
+         <li>正しさの保証が必須ではない</li>
+         <li>失敗時に止められる</li>
+         <li>出力は中間データ</li>
+         <li>誤りが致命的ではない</li>
+         <li>後段で if-then-else で締められる</li>
+         <li>AIを外しても成立する</li>
+       </ul>`;
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    for (const q of QUESTIONS) state[q.id] = null;
+    render();
+  });
+
+  document.getElementById("exampleBtn").addEventListener("click", () => {
+    // 典型「認識系」想定：全部OKになる回答例
+    state.q1 = "no";  // 正しさ保証は必須ではない
+    state.q2 = "yes"; // 止められる
+    state.q3 = "yes"; // 中間データ
+    state.q4 = "yes"; // 致命的ではない
+    state.q5 = "yes"; // 後段で締める
+    state.q6 = "yes"; // AIなしでも成立
+    render();
+  });
+
+  render();
+</script>
+</body>
+</html>
