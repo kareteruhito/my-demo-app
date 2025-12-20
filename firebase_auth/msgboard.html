@@ -48,6 +48,7 @@
   onAuthStateChanged(auth, (user) => {
     if (!user) {
       alert("ログインしてください");
+      location.href = "index.html";
     }
   });
 
