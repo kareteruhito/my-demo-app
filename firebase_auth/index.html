@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>Firebase Google Auth Minimal</title>
+</head>
+<body>
+
+<h1>Firebase Google 認証</h1>
+
+<button id="login">Googleでログイン</button>
+<button id="logout">ログアウト</button>
+
+<pre id="result"></pre>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+  import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+    signOut,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+
+  // ★ 自分のプロジェクトの設定に置き換える
+  const firebaseConfig = {
+    apiKey: "AIzaSyAqUV2T6HnM92juhNFLMnVOgNCeNSaSrt4",
+    authDomain: "authtest-6d1eb.firebaseapp.com",
+    projectId: "authtest-6d1eb",
+    storageBucket: "authtest-6d1eb.firebasestorage.app",
+    messagingSenderId: "65156168072",
+    appId: "1:65156168072:web:4dd2d09afef86d5605223d"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  const result = document.getElementById("result");
+
+  document.getElementById("login").onclick = async () => {
+    try {
+      const resultAuth = await signInWithPopup(auth, provider);
+      const user = resultAuth.user;
+      result.textContent =
+        "ログイン成功\n" +
+        "UID: " + user.uid + "\n" +
+        "名前: " + user.displayName + "\n" +
+        "Email: " + user.email;
+    } catch (e) {
+      result.textContent = e.message;
+    }
+  };
+
+  document.getElementById("logout").onclick = async () => {
+    await signOut(auth);
+    result.textContent = "ログアウトしました";
+  };
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      console.log("ログイン中:", user.displayName);
+    } else {
+      console.log("未ログイン");
+    }
+  });
+</script>
+
+</body>
+</html>
