@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Firebase Message Board</title>
+</head>
+<body>
+
+<h2>メッセージボード</h2>
+
+<input id="message" placeholder="メッセージ">
+<button id="send">送信</button>
+
+<ul id="messages"></ul>
+
+<script type="module">
+  // --- Firebase SDK ---
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    deleteDoc,
+    doc,
+    query,
+    orderBy,
+    onSnapshot,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+  // --- Firebase Config ---
+  const firebaseConfig = {
+    apiKey: "AIzaSyAqUV2T6HnM92juhNFLMnVOgNCeNSaSrt4",
+    authDomain: "authtest-6d1eb.firebaseapp.com",
+    projectId: "authtest-6d1eb",
+    storageBucket: "authtest-6d1eb.firebasestorage.app",
+    messagingSenderId: "65156168072",
+    appId: "1:65156168072:web:4dd2d09afef86d5605223d"
+  };
+
+  // --- Init ---
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // --- Login required ---
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      alert("ログインしてください");
+    }
+  });
+
+  // --- Post message ---
+  document.getElementById("send").onclick = async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const text = document.getElementById("message").value;
+    if (!text) return;
+
+    await addDoc(collection(db, "messages"), {
+      text,
+      uid: user.uid,
+      displayName: user.displayName,
+      createdAt: serverTimestamp()
+    });
+
+    document.getElementById("message").value = "";
+  };
+
+  // --- Realtime list ---
+  const list = document.getElementById("messages");
+
+  const q = query(
+    collection(db, "messages"),
+    orderBy("createdAt", "desc")
+  );
+
+  onSnapshot(q, (snapshot) => {
+    list.innerHTML = "";
+
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const li = document.createElement("li");
+
+      li.textContent = `${data.displayName}: ${data.text}`;
+
+      // delete only by owner
+      if (auth.currentUser?.uid === data.uid) {
+        const btn = document.createElement("button");
+        btn.textContent = "削除";
+        btn.onclick = async () => {
+          await deleteDoc(doc(db, "messages", docSnap.id));
+        };
+        li.appendChild(btn);
+      }
+
+      list.appendChild(li);
+    });
+  });
+</script>
+
+</body>
+</html>
