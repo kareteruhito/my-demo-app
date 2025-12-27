@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>8x8x4 Sprite Editor</title>
+
+<style>
+  body {
+    font-family: monospace;
+    display: flex;
+    gap: 16px;
+    padding: 12px;
+  }
+
+  canvas {
+    border: 1px solid #333;
+    image-rendering: pixelated;
+    cursor: crosshair;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 6px;
+  }
+
+  .palette {
+    margin-top: 8px;
+  }
+
+  .palette div {
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    border: 1px solid #000;
+    cursor: pointer;
+    box-sizing: border-box;
+  }
+
+  .palette div.active {
+    outline: 2px solid red;
+  }
+
+  textarea {
+    width: 480px;
+    height: 520px;
+    font-family: monospace;
+    font-size: 12px;
+  }
+
+  h4 {
+    margin: 8px 0 4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== LEFT : EDITOR ===== -->
+<div>
+  <div class="grid" id="editGrid"></div>
+
+  <h4>Palette</h4>
+  <div class="palette" id="palette"></div>
+
+  <p>Current Color Index: <b><span id="curColor">1</span></b></p>
+</div>
+
+<!-- ===== RIGHT : JSON OUTPUT ===== -->
+<textarea id="jsonOutput" spellcheck="false"></textarea>
+
+<script>
+/* ===== Constants ===== */
+const TILE_SIZE = 8;
+const FRAMES = 4;
+const SCALE = 24;
+
+/* ===== Sprite Data ===== */
+const frames = Array.from({ length: FRAMES }, () =>
+  new Uint8Array(TILE_SIZE * TILE_SIZE)
+);
+
+let currentColor = 1;
+
+/* ===== Palette ===== */
+const paletteColors = [
+  "rgba(0,0,0,0)", // 0 transparent
+  "#000000", "#ffffff", "#ff0000", "#00ff00", "#0000ff",
+  "#ffff00", "#ff00ff", "#00ffff", "#888888", "#444444",
+  "#ff8800", "#88ff00", "#0088ff", "#ff0088", "#00ff88"
+];
+
+/* ===== Canvas Setup ===== */
+const grid = document.getElementById("editGrid");
+const canvases = [];
+
+for (let i = 0; i < FRAMES; i++) {
+  const c = document.createElement("canvas");
+  c.width = TILE_SIZE * SCALE;
+  c.height = TILE_SIZE * SCALE;
+  c.dataset.index = i;
+  c.addEventListener("mousedown", onDraw);
+  grid.appendChild(c);
+  canvases.push(c);
+}
+
+/* ===== Drawing ===== */
+function redraw() {
+  canvases.forEach((c, fi) => {
+    const ctx = c.getContext("2d");
+    ctx.clearRect(0, 0, c.width, c.height);
+
+    for (let y = 0; y < TILE_SIZE; y++) {
+      for (let x = 0; x < TILE_SIZE; x++) {
+        const idx = frames[fi][y * TILE_SIZE + x];
+        if (idx !== 0) {
+          ctx.fillStyle = paletteColors[idx];
+          ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
+        }
+        ctx.strokeStyle = "#555";
+        ctx.strokeRect(x * SCALE, y * SCALE, SCALE, SCALE);
+      }
+    }
+  });
+
+  updateJSON();
+}
+
+/* ===== Mouse Draw ===== */
+function onDraw(e) {
+  const rect = e.target.getBoundingClientRect();
+  const x = Math.floor((e.clientX - rect.left) / SCALE);
+  const y = Math.floor((e.clientY - rect.top) / SCALE);
+  const fi = e.target.dataset.index;
+
+  if (x >= 0 && y >= 0 && x < TILE_SIZE && y < TILE_SIZE) {
+    frames[fi][y * TILE_SIZE + x] = currentColor;
+    redraw();
+  }
+}
+
+/* ===== Palette UI ===== */
+const paletteDiv = document.getElementById("palette");
+
+paletteColors.forEach((col, idx) => {
+  const d = document.createElement("div");
+  d.style.background = col;
+  if (idx === currentColor) d.classList.add("active");
+
+  d.onclick = () => {
+    currentColor = idx;
+    document.getElementById("curColor").textContent = idx;
+    document.querySelectorAll(".palette div")
+      .forEach(p => p.classList.remove("active"));
+    d.classList.add("active");
+  };
+
+  paletteDiv.appendChild(d);
+});
+
+/* ===== JSON Formatting ===== */
+function formatPixels(pixels, indent = "        ") {
+  const lines = [];
+  for (let i = 0; i < pixels.length; i += 8) {
+    lines.push(indent + pixels.slice(i, i + 8).join(", "));
+  }
+  return "[\n" + lines.join(",\n") + "\n      ]";
+}
+
+function updateJSON() {
+  const out = [];
+
+  out.push("{");
+  out.push('  "version": 1,');
+  out.push('  "tileSize": 8,');
+  out.push('  "frameLayout": "2x2",');
+  out.push('  "transparentIndex": 0,');
+  out.push('  "palette": ' + JSON.stringify(paletteColors, null, 2) + ",");
+  out.push('  "frames": [');
+
+  frames.forEach((frame, i) => {
+    out.push("    {");
+    out.push(`      "id": ${i},`);
+    out.push(`      "pixels": ${formatPixels(frame)}`);
+    out.push(i === frames.length - 1 ? "    }" : "    },");
+  });
+
+  out.push("  ]");
+  out.push("}");
+
+  document.getElementById("jsonOutput").value = out.join("\n");
+}
+
+/* ===== Init ===== */
+redraw();
+</script>
+
+</body>
+</html>
