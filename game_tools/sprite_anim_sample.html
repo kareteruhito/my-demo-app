@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Sprite Animation Sample</title>
+<style>
+  canvas {
+    border: 1px solid #333;
+    image-rendering: pixelated;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="screen" width="320" height="240"></canvas>
+
+<script>
+/* ===== Paste sprite JSON here ===== */
+const sprite = {
+  "tileSize": 8,
+  "transparentIndex": 0,
+  "palette": [
+    "rgba(0,0,0,0)",
+    "#000000",
+    "#ffffff",
+    "#ff0000",
+    "#00ff00",
+    "#0000ff",
+    "#ffff00",
+    "#ff00ff",
+    "#00ffff",
+    "#888888"
+  ],
+  "frames": [
+    {
+      "id": 0,
+      "pixels": [
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 1, 1, 0, 0, 0,
+        0, 0, 0, 1, 1, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0
+      ]
+    },
+    {
+      "id": 1,
+      "pixels": [
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 1, 1, 0, 0, 0,
+        0, 0, 1, 0, 0, 1, 0, 0,
+        0, 0, 1, 0, 0, 1, 0, 0,
+        0, 0, 0, 1, 1, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0
+      ]
+    },
+    {
+      "id": 2,
+      "pixels": [
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 1, 1, 1, 1, 1, 0,
+        0, 0, 1, 0, 0, 0, 1, 0,
+        0, 0, 1, 0, 0, 0, 1, 0,
+        0, 0, 1, 0, 0, 0, 1, 0,
+        0, 0, 1, 1, 1, 1, 1, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0
+      ]
+    },
+    {
+      "id": 3,
+      "pixels": [
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 1, 1, 1, 1, 1, 0,
+        0, 1, 0, 0, 0, 0, 0, 1,
+        0, 1, 0, 0, 0, 0, 0, 1,
+        0, 1, 0, 0, 0, 0, 0, 1,
+        0, 1, 0, 0, 0, 0, 0, 1,
+        0, 1, 0, 0, 0, 0, 0, 1,
+        0, 0, 1, 1, 1, 1, 1, 0
+      ]
+    }
+  ]
+};
+/* ===== End of sprite JSON ===== */
+
+/* ===== Constants ===== */
+const SCREEN_W = 320;
+const SCREEN_H = 240;
+const SCALE = 4;   // 8x8 → 32x32
+const FPS = 4;
+
+/* ===== Canvas (double buffer) ===== */
+const screen = document.getElementById("screen");
+const screenCtx = screen.getContext("2d");
+
+const buffer = document.createElement("canvas");
+buffer.width = SCREEN_W;
+buffer.height = SCREEN_H;
+const bufCtx = buffer.getContext("2d");
+
+/* ===== Prepare runtime data ===== */
+const palette = sprite.palette;
+const frames = sprite.frames.map(f => new Uint8Array(f.pixels));
+
+let frameIndex = 0;
+let lastTime = 0;
+
+/* ===== Draw 8x8 sprite ===== */
+function draw8x8(ctx, pixels, x, y, scale) {
+  for (let py = 0; py < 8; py++) {
+    for (let px = 0; px < 8; px++) {
+      const idx = pixels[py * 8 + px];
+      if (idx !== sprite.transparentIndex) {
+        ctx.fillStyle = palette[idx];
+        ctx.fillRect(
+          x + px * scale,
+          y + py * scale,
+          scale,
+          scale
+        );
+      }
+    }
+  }
+}
+
+/* ===== Game Loop (method ②) ===== */
+function loop(time) {
+  requestAnimationFrame(loop);
+
+  if (time - lastTime > 1000 / FPS) {
+    frameIndex = (frameIndex + 1) % frames.length;
+    lastTime = time;
+  }
+
+  // --- build full frame on back buffer ---
+  bufCtx.fillStyle = "#FFFFFF";                 // background
+  bufCtx.fillRect(0, 0, SCREEN_W, SCREEN_H); // clear + bg
+
+  draw8x8(bufCtx, frames[frameIndex], 144, 104, SCALE);
+
+  // --- present ---
+  screenCtx.drawImage(buffer, 0, 0);
+}
+
+requestAnimationFrame(loop);
+</script>
+
+</body>
+</html>
